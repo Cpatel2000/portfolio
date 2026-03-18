@@ -1192,6 +1192,14 @@ img { max-width: 100%; display: block; }
 }
 
 @media (max-width: 768px) {
+    .hero {
+        align-items: flex-start;
+    }
+
+    .hero-content {
+        padding-top: calc(var(--nav-height) + 40px);
+    }
+
     .nav-toggle {
         display: flex;
     }
