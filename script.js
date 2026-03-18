@@ -295,6 +295,47 @@ if (window.innerWidth > 768) {
     });
 }
 
+// ===== Contact form (Web3Forms AJAX) =====
+const contactForm = document.getElementById('contactForm');
+if (contactForm) {
+    contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = contactForm.querySelector('.form-submit');
+        const originalText = btn.textContent;
+        btn.textContent = 'Sending...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(Object.fromEntries(new FormData(contactForm)))
+            });
+            const data = await res.json();
+            if (data.success) {
+                btn.textContent = 'Message Sent!';
+                btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+                contactForm.reset();
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                    btn.disabled = false;
+                }, 3000);
+            } else {
+                throw new Error(data.message || 'Something went wrong');
+            }
+        } catch (err) {
+            btn.textContent = 'Failed — try again';
+            btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            btn.disabled = false;
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+            }, 3000);
+        }
+    });
+}
+
 // ===== Tilt effect on project cards =====
 if (window.innerWidth > 768) {
     document.querySelectorAll('.project-card').forEach(card => {
