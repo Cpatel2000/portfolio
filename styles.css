@@ -234,7 +234,7 @@ img { max-width: 100%; display: block; }
     min-height: 100vh;
     display: flex;
     align-items: center;
-    padding: calc(var(--nav-height) + 20px) 24px 0;
+    padding: 0 24px;
     position: relative;
     overflow: hidden;
 }
@@ -269,6 +269,7 @@ img { max-width: 100%; display: block; }
     width: 100%;
     position: relative;
     z-index: 1;
+    padding-top: calc(var(--nav-height) + 20px);
 }
 
 .hero-badge {
