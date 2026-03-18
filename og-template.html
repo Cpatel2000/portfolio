@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    width: 1200px;
+    height: 627px;
+    overflow: hidden;
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    background: #0a0a0f;
+    position: relative;
+}
+.mesh {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 70% 60% at 15% 50%, rgba(99, 102, 241, 0.2), transparent),
+        radial-gradient(ellipse 50% 50% at 85% 30%, rgba(139, 92, 246, 0.15), transparent),
+        radial-gradient(ellipse 40% 40% at 60% 90%, rgba(168, 85, 247, 0.1), transparent);
+}
+.content {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 90px;
+}
+.badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: #a78bfa;
+    padding: 8px 20px;
+    border: 1px solid rgba(167, 139, 250, 0.25);
+    border-radius: 100px;
+    margin-bottom: 28px;
+    background: rgba(99, 102, 241, 0.08);
+    width: fit-content;
+}
+.name {
+    font-size: 82px;
+    font-weight: 800;
+    color: #e8e8ed;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+}
+.tagline {
+    font-size: 22px;
+    color: #9898a6;
+    line-height: 1.5;
+    max-width: 600px;
+    margin-bottom: 36px;
+}
+.tagline a {
+    color: #a78bfa;
+    text-decoration: none;
+    font-weight: 600;
+}
+.chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: #a78bfa;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    padding: 6px 16px;
+    border-radius: 100px;
+}
+.url {
+    position: absolute;
+    bottom: 40px;
+    right: 90px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    color: #5a5a6e;
+    letter-spacing: 0.02em;
+}
+.dots {
+    position: absolute;
+    top: 40px;
+    right: 90px;
+    display: flex;
+    gap: 10px;
+}
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    opacity: 0.6;
+}
+.dot-1 { background: #6366f1; }
+.dot-2 { background: #8b5cf6; }
+.dot-3 { background: #a78bfa; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="mesh"></div>
+<div class="dots">
+    <div class="dot dot-1"></div>
+    <div class="dot dot-2"></div>
+    <div class="dot dot-3"></div>
+</div>
+<div class="content">
+    <div class="badge">Software Engineer</div>
+    <div class="name">Chitvan<br>Patel</div>
+    <div class="tagline">Embedded systems, portable MRI, agentic AI workflows. Based in San Francisco.</div>
+    <div class="chips">
+        <span class="chip">Python</span>
+        <span class="chip">C/C++</span>
+        <span class="chip">Embedded</span>
+        <span class="chip">Medical Devices</span>
+        <span class="chip">Agentic AI</span>
+    </div>
+</div>
+<div class="url">chitvanpatel.com</div>
+</body>
+</html>
