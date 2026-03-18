@@ -846,6 +846,16 @@ img { max-width: 100%; display: block; }
     border-radius: 100px;
 }
 
+.project-status {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 3px 10px;
+    border-radius: 100px;
+}
+
 .project-arrow {
     width: 20px;
     height: 20px;
