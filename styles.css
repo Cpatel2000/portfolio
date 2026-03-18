@@ -578,8 +578,6 @@ img { max-width: 100%; display: block; }
     color: var(--text-primary);
     line-height: 1.2;
     letter-spacing: -0.02em;
-    position: sticky;
-    top: 100px;
 }
 
 .about-image-wrapper {
@@ -587,7 +585,7 @@ img { max-width: 100%; display: block; }
     position: relative;
     border-radius: 16px;
     overflow: hidden;
-    max-width: 320px;
+    max-width: 280px;
 }
 
 .about-image-wrapper::after {
@@ -601,9 +599,9 @@ img { max-width: 100%; display: block; }
 
 .about-photo {
     width: 100%;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 4 / 5;
     object-fit: cover;
-    object-position: center top;
+    object-position: center 20%;
     border-radius: 16px;
     filter: grayscale(15%) contrast(1.05);
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
