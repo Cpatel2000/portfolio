@@ -1111,37 +1111,44 @@ img { max-width: 100%; display: block; }
 }
 
 .form-input {
+    display: block;
     width: 100%;
     padding: 14px 18px;
     font-family: var(--font-sans);
     font-size: 0.9rem;
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     outline: none;
     transition: var(--transition);
     -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    color-scheme: dark;
 }
 
 .form-input::placeholder {
     color: var(--text-muted);
+    opacity: 1;
 }
 
 .form-input:focus {
     border-color: rgba(99, 102, 241, 0.4);
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.08);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .form-textarea {
-    min-height: 120px;
+    min-height: 140px;
     resize: vertical;
+    line-height: 1.6;
 }
 
 .form-submit {
     width: 100%;
-    margin-top: 0.25rem;
+    margin-top: 0.5rem;
+    cursor: pointer;
 }
 
 .contact-divider {
