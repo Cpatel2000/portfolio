@@ -582,6 +582,38 @@ img { max-width: 100%; display: block; }
     top: 100px;
 }
 
+.about-image-wrapper {
+    margin-top: 2.5rem;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    max-width: 320px;
+}
+
+.about-image-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    pointer-events: none;
+}
+
+.about-photo {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: 16px;
+    filter: grayscale(15%) contrast(1.05);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.about-photo:hover {
+    filter: none;
+    transform: scale(1.02);
+}
+
 .about-right p {
     margin-bottom: 1.25rem;
     font-size: 1rem;
