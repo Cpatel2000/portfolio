@@ -295,6 +295,21 @@ if (window.innerWidth > 768) {
     });
 }
 
+// ===== Contact form (mailto) =====
+const contactForm = document.getElementById('contactForm');
+if (contactForm) {
+    contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = contactForm.querySelector('[name="name"]').value;
+        const email = contactForm.querySelector('[name="email"]').value;
+        const message = contactForm.querySelector('[name="message"]').value;
+
+        const subject = encodeURIComponent(`Portfolio Contact from ${name}`);
+        const body = encodeURIComponent(`Hi Chitvan,\n\n${message}\n\nFrom: ${name}\nEmail: ${email}`);
+        window.location.href = `mailto:chitvanp2000@gmail.com?subject=${subject}&body=${body}`;
+    });
+}
+
 // ===== Tilt effect on project cards =====
 if (window.innerWidth > 768) {
     document.querySelectorAll('.project-card').forEach(card => {
