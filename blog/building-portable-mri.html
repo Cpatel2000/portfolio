@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Portable MRI: Where Software Meets Physics | Chitvan Patel</title>
+    <meta name="description" content="The challenges of writing software for medical imaging devices, from real-time constraints and calibration to regulatory compliance and cross-functional debugging.">
+    <meta name="keywords" content="MRI, medical devices, embedded systems, calibration, DICOM, regulatory compliance, PyQt, VTK, neuro42">
+    <meta property="og:title" content="Building Portable MRI: Where Software Meets Physics">
+    <meta property="og:description" content="The challenges of writing software for medical imaging devices, from real-time constraints and calibration to regulatory compliance and cross-functional debugging.">
+    <meta property="og:type" content="article">
+    <meta property="og:image" content="https://chitvanpatel.com/og-image.png">
+    <meta property="og:url" content="https://chitvanpatel.com/blog/building-portable-mri.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://chitvanpatel.com/og-image.png">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <!-- Mouse gradient follower -->
+    <div class="mouse-gradient" id="mouseGradient"></div>
+    <!-- Click ripple container -->
+    <div class="ripple-container" id="rippleContainer"></div>
+
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav-inner">
+            <a href="../index.html" class="nav-logo">CP</a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="../index.html#about">About</a></li>
+                <li><a href="../index.html#experience">Experience</a></li>
+                <li><a href="../index.html#projects">Projects</a></li>
+                <li><a href="../index.html#skills">Skills</a></li>
+                <li><a href="../index.html#blog">Blog</a></li>
+                <li><a href="../index.html#contact" class="nav-cta">Let's Talk</a></li>
+            </ul>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Post header -->
+    <header class="post-header">
+        <div class="post-container">
+            <a href="../index.html#blog" class="post-back">&larr; Back to writing</a>
+            <div class="section-label">Writing</div>
+            <h1 class="post-title">Building Portable MRI: Where Software Meets Physics</h1>
+            <div class="post-meta">
+                <span>July 8, 2026</span>
+                <span>11 min read</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Post body -->
+    <article class="post-body">
+        <div class="post-container">
+            <p>When people think about MRI, they usually think about the scanner itself: the magnet, the coils, the patient table, and the final image that shows up on the screen. But behind that image is a full software system working across hardware control, signal acquisition, calibration, reconstruction, visualization, cloud transfer, testing, and compliance.</p>
+            <p>That is the part I have been working on at <a href="https://neuro42.com" target="_blank" rel="noopener">neuro42</a>: building software for portable MRI devices.</p>
+            <p>Portable MRI is an interesting engineering problem because it sits right at the intersection of software, physics, hardware, and medicine. It is not just about writing clean code or building a nice UI. The software has to interact with real hardware, follow timing constraints, handle large amounts of imaging data, support clinical workflows, and still be reliable enough for a regulated medical device environment.</p>
+            <p>That combination makes the work challenging, but also very meaningful.</p>
+
+            <h2>Software is part of the imaging system</h2>
+            <p>In a typical software project, if something is slow or slightly off, the result might be a bad user experience or a failed request. In MRI software, the consequences are different. A timing mismatch, calibration issue, dropped data line, or incorrect reconstruction path can affect the quality of the final image.</p>
+            <p>That changed how I think as an engineer.</p>
+            <p>The software is not separate from the physics. It is part of the system that produces the image.</p>
+            <p>For example, when working on MRI acquisition and reconstruction workflows, the code is connected to real signals coming from hardware. Data has to be captured correctly, processed correctly, and passed through the right reconstruction pipeline. If something fails, it is not always obvious whether the root cause is in software, hardware, signal processing, timing, memory usage, RF calibration, or the scan recipe itself.</p>
+            <p>Debugging becomes more than reading logs. It becomes a full system investigation.</p>
+            <p>You might look at acquisition logs, calibration results, memory usage, scanner behavior, raw signal data, reconstructed images, DICOM outputs, and UI behavior. Sometimes the bug is a normal software issue. Sometimes it is a physics issue showing up through software. And sometimes it is a hardware-software integration problem that only appears under specific scan conditions.</p>
+            <p>That is what makes medical imaging software different from many other software systems. You are not just moving data from point A to point B. You are helping turn physical signals into clinically useful images.</p>
+
+            <h2>Real-time constraints are real constraints</h2>
+            <p>One of the biggest lessons I have learned is that performance in imaging systems is not just about making things "fast." It is about making them predictable.</p>
+            <p>MRI workflows involve large data, strict sequencing, and time-sensitive operations. The system has to acquire data, process it, reconstruct it, display it, and sometimes transfer it securely to the cloud. Each step depends on the previous one working correctly.</p>
+            <p>If the software cannot keep up, you may see issues like dropped lines, memory pressure, delayed reconstruction, or inconsistent behavior between systems. These are not always simple bugs. They can come from how data is buffered, how memory is allocated, how many measurements are being processed, how reconstruction is triggered, or how the system behaves under long scans.</p>
+            <p>I have seen how the same scan can behave differently depending on hardware resources, memory availability, environment setup, and software configuration. That pushes you to think carefully about scalability and stability, even inside an embedded or device-focused environment.</p>
+            <p>It also makes testing more important.</p>
+            <p>You cannot only test the happy path. You have to test long scans, repeated scans, edge cases, low-memory situations, different calibration paths, different imaging sequences, and different system configurations. You also need automation wherever possible, because manually testing every path is not realistic as the software grows.</p>
+
+            <h2>Calibration is where software and hardware really meet</h2>
+            <p>Calibration is one of the clearest examples of software meeting physics.</p>
+            <p>In MRI, calibration steps help the system find the correct operating parameters before imaging. These can include frequency calibration, RF power calibration, and other system-specific checks. From the outside, calibration might look like a setup step. But from a software perspective, it is a workflow that needs to be reliable, repeatable, measurable, and easy to debug.</p>
+            <p>The software has to run the calibration, collect results, compare them against thresholds, decide whether another pass is needed, and ensure the final values are safe and usable for the scan. When calibration is iterative, the logic becomes even more important. The system cannot just "try something." It needs a controlled process with clear stopping conditions.</p>
+            <p>This is where engineering discipline matters.</p>
+            <p>You need good logs. You need clear thresholds. You need traceability. You need to know what changed between one pass and the next. And when something fails, the failure should be understandable to the engineers and useful for the broader team.</p>
+            <p>That is one thing I enjoy about this work. It forces you to write software that is not only functional, but explainable.</p>
+
+            <h2>The UI is not just a UI</h2>
+            <p>Another interesting part of medical imaging software is the viewer.</p>
+            <p>At first, building a viewer can sound like a frontend problem: load images, show them to the user, add buttons for zoom, pan, contrast, brightness, orientation, and slice navigation. But in an imaging device, the viewer is part of the clinical workflow.</p>
+            <p>The UI has to make the image easy to inspect. It has to support multiple image types, different scan outputs, and different viewing states. It has to handle both automatically loaded scan results and manually imported DICOM images. It has to stay responsive while working with large image data.</p>
+            <p>Small details matter.</p>
+            <p>Button placement, window resizing, orientation labels, contrast controls, image loading behavior, and consistency across views all affect usability. A viewer that technically works but feels inconsistent can slow people down. In a medical environment, that matters.</p>
+            <p>I worked on building and improving a multi-window MRI viewing interface using PyQt and VTK, where multiple scan results could be displayed in the same viewing tab. The challenge was not only displaying images, but making the experience consistent: keeping controls stable, supporting expanded views, loading new scans into available windows, and avoiding overwriting manually imported images.</p>
+            <p>That type of work taught me that device software is not divided cleanly into "backend" and "frontend." The UI is connected to acquisition, reconstruction, file handling, DICOM output, and clinical usability. A small UI bug can expose a deeper workflow issue.</p>
+
+            <h2>Compliance changes how you build</h2>
+            <p>Medical device software also has another layer: regulatory expectations.</p>
+            <p>In a regulated environment, writing the code is only part of the job. You also have to think about documentation, validation, traceability, risk, testing, and change control. For medical imaging systems, software changes may need to be tied back to requirements, test cases, and release documentation.</p>
+            <p>This is not just paperwork. It changes how you approach engineering.</p>
+            <p>You need to be able to explain why a change was made, how it was tested, what risk it addresses, and what parts of the system it may affect. When working with clinical data, secure handling and privacy also become important, especially when images or DICOM data move into cloud workflows.</p>
+            <p>This can feel slower than typical software development, but I think it also makes you a better engineer. It forces clarity. It forces discipline. It forces you to think beyond "it works on my machine."</p>
+            <p>In medical software, "working" means something stronger. It means the system behaves correctly, the results are reproducible, the risks are understood, and the team can trust the change.</p>
+
+            <h2>Cross-functional debugging is part of the job</h2>
+            <p>One of the biggest differences in this type of work is how cross-functional it is.</p>
+            <p>A single issue might require input from software engineers, hardware engineers, RF engineers, signal processing engineers, QA, and clinical stakeholders. You have to be comfortable moving between code, logs, hardware behavior, test results, and user feedback.</p>
+            <p>That is something I personally enjoy.</p>
+            <p>I like working on systems where the software has a physical impact. I like when debugging requires curiosity instead of just checking a stack trace. I like when a problem forces me to understand the bigger system, not just the function I am editing.</p>
+            <p>Portable MRI has a lot of those problems.</p>
+            <p>A reconstruction issue might lead you into signal processing. A scan failure might lead you into hardware timing. A viewer issue might lead you into DICOM handling. A calibration bug might lead you into RF behavior. A cloud transfer issue might lead you into compliance and data pipelines.</p>
+            <p>It keeps the work challenging in the best way.</p>
+
+            <h2>What portable MRI has taught me</h2>
+            <p>Building software for portable MRI has taught me that medical device engineering is not about one perfect layer of the stack. It is about making many imperfect layers work together reliably.</p>
+            <p>The physics has to be respected. The hardware has to be understood. The software has to be stable. The UI has to be usable. The data has to be secure. The tests have to be meaningful. The documentation has to support the release.</p>
+            <p>And all of this has to come together in a system that people can trust.</p>
+            <p>That is the part I find most exciting. Portable MRI is not only a smaller version of a traditional MRI system. It is a chance to rethink how imaging can be made more accessible, more flexible, and easier to deploy.</p>
+            <p>For me, this work sits exactly where I like to be: close to the hardware, close to the users, and close to real-world impact.</p>
+            <p>Software is often invisible when everything works. In medical imaging, that invisibility is the goal. The best software quietly supports the physics, the device, the workflow, and the people using it.</p>
+            <p>That is what makes building portable MRI such a meaningful engineering challenge.</p>
+
+            <div class="post-footer-nav">
+                <a href="../index.html#blog" class="post-back">&larr; Back to writing</a>
+            </div>
+        </div>
+    </article>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>Designed & Built by Chitvan Patel</p>
+            <p>&copy; 2026 Chitvan Patel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="../script.js"></script>
+</body>
+</html>
