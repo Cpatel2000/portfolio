@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A 1-in-5 flake: debugging a SQLite WAL race under Ray | Chitvan Patel</title>
+    <meta name="description" content="A test failed one time in five. The obvious fix, suggested by Claude, was wrong. Here's how a 30-line reproduction script found the real cause: a SQLite WAL mode race between fresh connections.">
+    <meta name="keywords" content="SQLite, WAL mode, Ray, race condition, debugging, busy_timeout, Python, gradetrail">
+    <meta property="og:title" content="A 1-in-5 flake: debugging a SQLite WAL race under Ray">
+    <meta property="og:description" content="A test failed one time in five. The obvious fix, suggested by Claude, was wrong. Here's how a 30-line reproduction script found the real cause.">
+    <meta property="og:type" content="article">
+    <meta property="og:image" content="https://chitvanpatel.com/og-image.png">
+    <meta property="og:url" content="https://chitvanpatel.com/blog/sqlite-wal-race-under-ray.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://chitvanpatel.com/og-image.png">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <!-- Mouse gradient follower -->
+    <div class="mouse-gradient" id="mouseGradient"></div>
+    <!-- Click ripple container -->
+    <div class="ripple-container" id="rippleContainer"></div>
+
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav-inner">
+            <a href="../index.html" class="nav-logo">CP</a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="../index.html#about">About</a></li>
+                <li><a href="../index.html#experience">Experience</a></li>
+                <li><a href="../index.html#projects">Projects</a></li>
+                <li><a href="../index.html#skills">Skills</a></li>
+                <li><a href="../index.html#blog">Blog</a></li>
+                <li><a href="../index.html#contact" class="nav-cta">Let's Talk</a></li>
+            </ul>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Post header -->
+    <header class="post-header">
+        <div class="post-container">
+            <a href="../index.html#blog" class="post-back">&larr; Back to writing</a>
+            <div class="section-label">Writing</div>
+            <h1 class="post-title">A 1-in-5 flake: debugging a SQLite WAL race under Ray</h1>
+            <div class="post-meta">
+                <span>July 8, 2026</span>
+                <span>9 min read</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Post body -->
+    <article class="post-body">
+        <div class="post-container">
+            <p>I recently built <a href="https://github.com/Cpatel2000/gradetrail" target="_blank" rel="noopener">gradetrail</a>, a distributed LLM evaluation harness. It caches model responses in SQLite so that re-running an eval is free, and it has a Ray backend that splits samples across worker processes. Those two features met each other badly, and this post is about the week's most interesting bug: a test that failed about one time in five, an obvious fix that turned out to be wrong, and a 30-line script that found the real cause.</p>
+
+            <h2>The symptom</h2>
+            <p>My Ray test suite boots a real cluster, not local mode, and runs the full per-sample pipeline against it. One test checks that multiple Ray workers writing to the same SQLite cache file produce results a later run can read back.</p>
+            <p>Most runs it passed. Roughly one in five it failed, always the same way. A sample that should have scored came back as <code>provider_error</code> with this in the detail field:</p>
+            <pre><code>worker failed: RayTaskError(OperationalError)(OperationalError('database is locked'))</code></pre>
+            <p>That error annoyed me more than a normal failure would, because it is exactly the error I had already defended against. The cache opens SQLite in WAL mode with a 5 second busy_timeout, and I had a test where two connections in the same process hammer the same file concurrently. It passed every time. But Ray workers are separate OS processes, and this was the first time genuinely separate processes fought over one file.</p>
+
+            <h2>The obvious fix, which was wrong</h2>
+            <p>My connect code set the pragmas in this order:</p>
+            <pre><code>await conn.execute("PRAGMA journal_mode=WAL")
+await conn.execute("PRAGMA busy_timeout=5000")</code></pre>
+            <p>Here is a fact that makes the wrong hypothesis very convincing: busy_timeout defaults to 0 on a fresh connection. So the WAL pragma, which takes a lock, runs with zero patience. If another worker holds the lock at that exact moment, you fail instantly instead of waiting. Swap the two lines and the problem should disappear.</p>
+            <p>This explanation came from Claude while I was building the project, and it sounded authoritative enough that I almost committed it with a notes entry claiming victory. The only thing that saved me was a rule I had been following all week: never trust a single passing run for an intermittent bug. I reordered the pragmas and ran the Ray suite in a loop, 20 times.</p>
+            <p>It failed 6 out of 20. Statistically identical to before the change. The fix was correct hygiene, I kept it, but it fixed nothing.</p>
+
+            <h2>Getting Ray out of the room</h2>
+            <p>At this point the bug lived somewhere in a stack of Ray, pytest, asyncio, and aiosqlite, and debugging inside all four at once is miserable. So I did the opposite: I wrote a script with none of them. Plain <code>sqlite3</code>, plain <code>multiprocessing</code>, nothing else.</p>
+            <pre><code>def _worker(db_path, worker_id, n_writes, results):
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.execute("PRAGMA busy_timeout=5000")
+        (mode,) = conn.execute("PRAGMA journal_mode=WAL").fetchone()
+        ...
+    except sqlite3.OperationalError as exc:
+        results[worker_id] = f"OperationalError: {exc}"</code></pre>
+            <p>Three of these as separate processes, all pointed at the same brand new, empty SQLite file, all racing to run the WAL pragma at the same instant. Note that busy_timeout is set first on every connection. This is the already-fixed order.</p>
+            <p>I ran it 15 times. On one of them:</p>
+            <pre><code>sqlite3.OperationalError: database is locked</code></pre>
+            <p>on the <code>journal_mode=WAL</code> line. No Ray anywhere in the process. The race was real, and it had nothing to do with anything my project controlled.</p>
+
+            <h2>The actual mechanism</h2>
+            <p>A fresh SQLite file starts in rollback-journal mode. Switching it to WAL is not an ordinary write. It rewrites the database header, because the on-disk format itself changes, and that requires a brief exclusive lock.</p>
+            <p>busy_timeout governs SQLite's normal busy-handler loop, the one that handles ordinary lock contention once a database has settled into a journal mode. The one-time first-ever mode switch sits outside that path. When several fresh connections race to be the one that performs the switch on a brand new file, one of them can hit SQLITE_BUSY in a way busy_timeout does not smooth over.</p>
+            <p>This also explains every detail of the symptom. Once a file is in WAL mode, later WAL pragmas are cheap no-ops, so the race only exists on a fresh cache file. And it needs genuinely separate processes racing the very first connections, which is why my two-connection same-process test never caught it, and why it only appeared when Ray workers showed up.</p>
+
+            <h2>The fix, in two layers</h2>
+            <p>The correctness fix belongs in the cache's own connect method, not in the Ray runner. If it lived in the runner, the next concurrent entry point, say two <code>gradetrail run</code> commands started at once, would silently reintroduce the race. The layer that owns the invariant gets the fix.</p>
+            <pre><code>async def connect(self) -> None:
+    last_exc = None
+    for attempt in range(1, _CONNECT_MAX_ATTEMPTS + 1):
+        try:
+            self._conn = await self._try_connect()
+            return
+        except sqlite3.OperationalError as exc:
+            last_exc = exc
+            if attempt == _CONNECT_MAX_ATTEMPTS:
+                break
+            await asyncio.sleep(random.uniform(_CONNECT_RETRY_MIN_S, _CONNECT_RETRY_MAX_S))
+    raise CacheError(
+        f"could not connect to {self._path} after {_CONNECT_MAX_ATTEMPTS} attempts "
+        f"(likely concurrent connections racing the initial WAL switch): {last_exc}"
+    ) from last_exc</code></pre>
+            <p>Five attempts, 50 to 200ms of jittered backoff, since the race window itself is milliseconds wide. Only <code>sqlite3.OperationalError</code> retries. A permanent failure, like a filesystem that cannot do WAL at all, raises immediately with the last error chained.</p>
+            <p>On top of that, the Ray runner pre-warms the cache: the driver opens and closes one connection before dispatching any workers, so the file is already in WAL mode when they arrive. That is an optimization, not the fix. It turns the retry path into a safety net that almost never fires instead of a hot path every worker negotiates at startup.</p>
+
+            <h2>Verification</h2>
+            <p>The race is not deterministically reproducible in a test suite, so the retry logic is tested by mocking the connection to fail a controlled number of times. One test proves recovery after two failures, including a real WAL check and a put/get round trip on the successful attempt. Another proves exactly five attempts happen before a chained CacheError.</p>
+            <p>The empirical confirmation was, again, a loop: the full Ray suite 25 consecutive times, zero failures, down from one in five.</p>
+
+            <h2>What I took from it</h2>
+            <p>Three things.</p>
+            <p>A single passing run means nothing for an intermittent bug. The wrong fix passed once too. The loop is the test.</p>
+            <p>When a bug lives in a four-layer stack, the fastest path is usually to remove layers until the bug is alone in the room. Thirty lines of multiprocessing beat hours of debugging inside Ray.</p>
+            <p>And an explanation sounding authoritative, whether it comes from a person, a document, or an AI, is not evidence. The pragma-order theory was plausible, well argued, and wrong. The loop did not care how convincing it was.</p>
+            <p>The reproduction script is <a href="https://github.com/Cpatel2000/gradetrail/blob/main/scripts/repro_sqlite_wal_race.py" target="_blank" rel="noopener">committed in the repo</a> if you want to see the race yourself.</p>
+
+            <div class="post-footer-nav">
+                <a href="../index.html#blog" class="post-back">&larr; Back to writing</a>
+            </div>
+        </div>
+    </article>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>Designed & Built by Chitvan Patel</p>
+            <p>&copy; 2025 Chitvan Patel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="../script.js"></script>
+</body>
+</html>

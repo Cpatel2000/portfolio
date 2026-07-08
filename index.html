@@ -136,7 +136,6 @@
             <div class="section-label">Experience</div>
             <div class="exp-grid">
                 <div class="exp-card active-role">
-                    <div class="exp-glow"></div>
                     <div class="exp-header">
                         <div>
                             <h3 class="exp-role">Embedded Software Engineer</h3>
@@ -144,18 +143,6 @@
                         </div>
                         <span class="exp-date">Feb 2024 - Present</span>
                     </div>
-                    <ul class="exp-points">
-                        <li>Design and implement software for neuro42's portable MRI devices, from requirements to production and commercial deployment</li>
-                        <li>Developed and implemented test protocols for MRI subsystems (RF, GPA, SDR, PLC), improving consistency, test coverage, and repeatability</li>
-                        <li>Collaborated with hardware engineers to investigate PCBA failures, implement corrective actions, and strengthen design testability</li>
-                        <li>Automated firmware/software deployment and validation pipelines using CI/CD tools like Jenkins and Git</li>
-                        <li>Authored weekly metrics decks with visualizations and concise narratives; facilitated cross-functional readouts and decision tracking</li>
-                        <li>Analyze and enhance the efficiency, stability, and scalability of system resources for optimal MRI performance</li>
-                        <li>Design, develop, test, and debug system software, supporting QA and optimizing I/O performance for rapid MRI data processing</li>
-                        <li>Interface with hardware design teams to integrate embedded software seamlessly with advanced imaging hardware</li>
-                        <li>Develop infrastructure for secure transmission of sensitive clinical data to the cloud, ensuring HIPAA compliance</li>
-                        <li>Support engineering teams by developing automation and test tools, enhancing the development life-cycle and system reliability</li>
-                    </ul>
                     <div class="exp-tags">
                         <span>Python</span><span>C/C++</span><span>Jenkins</span><span>REST API</span><span>HIPAA</span>
                     </div>
@@ -169,11 +156,6 @@
                         </div>
                         <span class="exp-date">Nov 2023 - Feb 2024</span>
                     </div>
-                    <ul class="exp-points">
-                        <li>Test scripts for automation and data analysis to diagnose failed RMA units</li>
-                        <li>Hardware bring-up of PCBs, RF boards, FPGAs, and system modules</li>
-                        <li>ATE test program solutions for hardware modules and PCBA</li>
-                    </ul>
                     <div class="exp-tags">
                         <span>Python</span><span>FPGAs</span><span>PCB</span><span>ATE</span>
                     </div>
@@ -187,11 +169,6 @@
                         </div>
                         <span class="exp-date">Sep 2023 - Nov 2024</span>
                     </div>
-                    <ul class="exp-points">
-                        <li>Lead the research and development phases of a cutting-edge chatbot project designed to serve as a teaching assistant for students</li>
-                        <li>Ingested a diverse range of educational resources into Elastic Search, optimized vector embeddings, and implemented Retrieval Augmented Generation (RAG) technology to enhance the chatbot's knowledge base</li>
-                        <li>Ensured seamless integration with Elastic Search for efficient content retrieval</li>
-                    </ul>
                     <div class="exp-tags">
                         <span>Python</span><span>RAG</span><span>Elastic Search</span><span>NLP</span>
                     </div>
@@ -205,11 +182,6 @@
                         </div>
                         <span class="exp-date">Jun 2022 - Dec 2022</span>
                     </div>
-                    <ul class="exp-points">
-                        <li>Python scripts to post-process DVT data of 12,000 temperature loggers (7% revenue increase)</li>
-                        <li>Serial communication scripts for 24-hour continuous data logging</li>
-                        <li>Interactive Tableau dashboards for trend analysis</li>
-                    </ul>
                     <div class="exp-tags">
                         <span>Python</span><span>Tableau</span><span>Serial</span>
                     </div>
@@ -367,6 +339,12 @@
         <div class="container">
             <div class="section-label">Writing</div>
             <div class="blog-grid">
+                <a href="blog/sqlite-wal-race-under-ray.html" class="blog-card blog-card-link">
+                    <div class="blog-gradient blog-gradient-1"></div>
+                    <span class="blog-status">July 8, 2026 &middot; 9 min read</span>
+                    <h3 class="blog-title">A 1-in-5 flake: debugging a SQLite WAL race under Ray</h3>
+                    <p class="blog-excerpt">A test failed one time in five. The obvious fix, suggested by Claude, was wrong. Here's how a 30-line reproduction script found the real cause.</p>
+                </a>
                 <article class="blog-card">
                     <div class="blog-gradient blog-gradient-1"></div>
                     <span class="blog-status">Coming Soon</span>
